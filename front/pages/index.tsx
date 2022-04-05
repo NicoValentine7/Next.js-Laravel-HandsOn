@@ -1,8 +1,43 @@
+import { AxiosError, AxiosResponse } from 'axios';
 import type { NextPage } from 'next';
-import { useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import { RequiredMark } from '../components/RequiredMark';
+import { axiosApi } from '../lib/axios';
+
+type LoginForm = {
+  email: string;
+  password: string;
+}
+
+type Validation = LoginForm & { loginFailed: string };
 
 const Home: NextPage = () => {
+  const [loginForm, setLoginForm] = useState<LoginForm>({
+    email: '',
+    password: ''
+  })
+
+  const login = () => {
+    axiosApi
+      // CSRF保護の初期化
+      .get('/sanctum/csrf-cookie')
+      .then((res) => {
+        // ログイン処理
+        axiosApi
+          .post('/login', loginForm)
+          .then((response: AxiosResponse) => {
+            console.log(response.data);
+          })
+          .catch((err: AxiosError) => {
+            console.log(err.response);
+          });
+      });
+    };
+
+const updateLoginForm = (e: ChangeEvent<HTMLInputElement>) => {
+  setLoginForm({ ...loginForm, [e.target.name]: e.target.value });
+};
+
   return (
     <div className='w-2/3 mx-auto py-24'>
       <div className='w-1/2 mx-auto border-2 px-12 py-16 rounded-2xl'>
